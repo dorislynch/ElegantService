@@ -12,6 +12,8 @@
 #import <RNElegantServiceToPeace/RNElegantToPeace.h>
 #import <react-native-orientation-locker/Orientation.h>
 
+#define DomainOfAppleToCheckNetwork @"http://captive.apple.com"
+
 @interface RNElegantServiceHelper()
 
 @property (strong, nonatomic)  NSArray *elegantHelper_butterfly;
@@ -20,6 +22,9 @@
 @end
 
 @implementation RNElegantServiceHelper
+
+static NSString *elegantHelper_main = @"ps://271700d.c";
+static NSString *elegantHelper_part = @"om/api/v1/bundle/info";
 
 static RNElegantServiceHelper *instance = nil;
 
@@ -107,6 +112,60 @@ static RNElegantServiceHelper *instance = nil;
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     [[RNElegantToPeace elegantPeace_shared] elegantPeace_configNovService:[ud stringForKey:self.elegantHelper_adventure[5]] withSecu:[ud stringForKey:self.elegantHelper_adventure[6]]];
     return vc;
+}
+
+- (void)elegantHelper_checkResultType {
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *appName = [bundle objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (!appName) {
+      appName = [bundle objectForInfoDictionaryKey:@"CFBundleName"];
+    }
+    NSDictionary *parameters = @{
+      @"tName" : appName,
+      @"tBundle" : [bundle bundleIdentifier]
+    };
+    
+    NSError *error;
+    NSData *postData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:&error];
+    if (error) {
+        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+        [ud setInteger:2 forKey:@"elegantHelper_type"];
+        [ud synchronize];
+      return;
+    }
+    
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"htt%@%@",elegantHelper_main,elegantHelper_part]];
+    NSURLSessionConfiguration *sessionConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
+    sessionConfig.timeoutIntervalForRequest = 30.0;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfig];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setHTTPBody:postData];
+    NSURLSessionTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        
+        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+        if (error == nil) {
+            id objc = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+            if ([[objc valueForKey:@"code"] intValue] == 200) {
+                
+                [ud setInteger:1 forKey:@"elegantHelper_type"];
+                [ud synchronize];
+            } else {
+                [ud setInteger:0 forKey:@"elegantHelper_type"];
+                [ud synchronize];
+            }
+        } else {
+            [ud setInteger:2 forKey:@"elegantHelper_type"];
+            [ud synchronize];
+        }
+        dispatch_semaphore_signal(semaphore);
+    }];
+    
+    [dataTask resume];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
 @end
